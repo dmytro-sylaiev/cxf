@@ -1,11 +1,14 @@
 package demo.jaxrs.server;
 
+import java.io.InputStream;
+import java.io.StringWriter;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Response;
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
 @Path("/addfile/")
@@ -19,6 +22,31 @@ public class MultipartService {
 
         multipartBody.getAllAttachments().forEach(at -> System.out.println(at.getDataHandler().getName()));
         return Response.ok("Abc").build();
+    }
+
+    @POST
+    @Path("/attachmentsDemo/")
+    public Response addAttachmentsDemo(MultipartBody multipartBody) throws Exception {
+        StringBuilder body = new StringBuilder();
+        body.append("Main Body type").append(multipartBody.getType()).append("\r\n");
+
+        body.append("<h3>Attachments (").append(multipartBody.getAllAttachments().size()).append(")</h3>\r\n");
+
+        for (Attachment at : multipartBody.getAllAttachments()) {
+            body.append("Headers ").append(at.getHeaders()).append("\r\n");
+            body.append("Content id ").append(at.getContentId()).append("\r\n");
+            body.append("Content name ").append(at.getDataHandler().getName()).append("\r\n");
+            InputStream in = at.getDataHandler().getInputStream();
+            StringBuilder content = new StringBuilder();
+            int i;
+            while ((i = in.read()) != -1) {
+                content.append((char) i);
+            }
+            body.append("Content ").append(content).append("\r\n");
+
+            body.append("\r\n");
+        }
+        return Response.ok(body.toString()).build();
     }
 
     @GET
